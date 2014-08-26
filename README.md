@@ -47,10 +47,9 @@ one-step-ahead volatility forecast
 
     using GARCH
     using Quandl
-    quotes = quandl("YAHOO/INDEX_GSPC")
-    ret = diff(log(quotes["Close"]))
-    ret = ret - mean(ret)
-    garchFit(convert(Vector,ret[end-199:end]))
+    quotes = quandl("YAHOO/INDEX_GSPC", format="DataFrame")
+    ret = diff(log(array(quotes[:Adjusted_Close])))
+    garchFit(ret)
     
 ## Author
 Andrey Kolev
