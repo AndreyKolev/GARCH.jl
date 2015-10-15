@@ -117,14 +117,4 @@ function garchFit(rets::Vector)
   out = GarchFit(rets, minx, -0.5*(T-1)*log(2*pi)-0.5*minf, ret, converged, sqrt(ht), H, cvar, secoef, tval)
 end
 
-function garchPkgTest()
-  info("Running GARCH package test...")
-  try
-    include(Pkg.dir("GARCH", "test", "runtests.jl"))
-    info("All tests passed!")
-  catch err
-    throw(err)
-  end
-end
-
 end  #module
