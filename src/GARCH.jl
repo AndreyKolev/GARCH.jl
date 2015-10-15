@@ -92,8 +92,7 @@ function predict(fit::GarchFit)
  sqrt(omega + alpha*rets2[end] + beta*ht[end]);
 end
 
-function garchFit(data::Vector)
-  rets = data
+function garchFit(rets::Vector)
   rets2   = rets.^2;
   T = length(rets);
   ht = zeros(T);
@@ -115,7 +114,7 @@ function garchFit(data::Vector)
   cvar = -inv(H)
   secoef = sqrt(diag(cvar))
   tval = minx./secoef
-  out = GarchFit(data, minx, -0.5*(T-1)*log(2*pi)-0.5*minf, ret, converged, sqrt(ht), H, cvar, secoef, tval)
+  out = GarchFit(rets, minx, -0.5*(T-1)*log(2*pi)-0.5*minf, ret, converged, sqrt(ht), H, cvar, secoef, tval)
 end
 
 function garchPkgTest()
