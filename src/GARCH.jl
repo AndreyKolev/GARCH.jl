@@ -49,9 +49,9 @@ function cdHessian(par, LLH)
   H = zeros(n,n)
   for(i = 1:n)
     for(j = 1:n)
-      x1 = copy(par) 
+      x1 = copy(par)
       x1[i] += eps[i]
-      x1[j] += eps[j] 
+      x1[j] += eps[j]
       x2 = copy(par)
       x2[i] += eps[i]
       x2[j] -= eps[j]
@@ -69,7 +69,7 @@ end
 
 function garchLLH(rets::Vector, x::Vector)
   rets2   = rets.^2;
-  T = length(rets); 
+  T = length(rets);
   ht = zeros(T);
   omega,alpha,beta = x;
   ht[1] = sum(rets2)/T;
@@ -83,7 +83,7 @@ function predict(fit::GarchFit)
  omega, alpha, beta = fit.params;
  rets = fit.data
  rets2   = rets.^2;
- T = length(rets); 
+ T = length(rets);
  ht    = zeros(T);
  ht[1] = sum(rets2)/T;
  for i=2:T
@@ -95,7 +95,7 @@ end
 function garchFit(data::Vector)
   rets = data
   rets2   = rets.^2;
-  T = length(rets); 
+  T = length(rets);
   ht = zeros(T);
   function garchLike(x::Vector, grad::Vector)
     omega,alpha,beta = x;
