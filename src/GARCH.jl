@@ -6,7 +6,7 @@ module GARCH
 
 using NLopt, Distributions
 
-export garchFit, garchPkgTest, predict
+export garchFit, predict
 
 include("stattests.jl")
 
@@ -29,92 +29,99 @@ function Base.show(io::IO ,fit::GarchFit)
     jbstat, jbp = jbtest(fit.data./fit.sigma)
 
     @printf io "Fitted garch model \n"
-    @printf io " * Coefficient(s):    %-15s%-15s%-15s\n" "α₀" "α₁" "β₁"
+    @printf io " * Coefficient(s):    %-15s%-15s%-15s\n" "ω" "α" "β"
     @printf io "%-22s%-15.5g%-15.5g%-15.5g\n" "" fit.params[1] fit.params[2] fit.params[3]
     @printf io " * Log Likelihood: %.5g\n" fit.llh
     @printf io " * Converged: %s\n" fit.converged
     @printf io " * Solver status: %s\n\n" fit.status
     @printf io " * Standardised Residuals Tests:\n"
-    @printf io "   %-26s%-15s%-15s\n" "" "Statistic" "tp-Value"
+    @printf io "   %-26s%-15s%-15s\n" "" "Statistic" "p-Value"
     @printf io "   %-21s%-5s%-15.5g%-15.5g\n\n" "Jarque-Bera Test" "χ²" jbstat jbp
     @printf io " * Error Analysis:\n"
     @printf io "   %-7s%-15s%-15s%-15s%-15s\n" "" "Estimate" "Std.Error" "t value" "Pr(>|t|)"
-    @printf io "   %-7s%-15.5g%-15.5g%-15.5g%-15.5g\n" "α₀" fit.params[1] fit.secoef[1] fit.tval[1] prt(fit.tval[1])
-    @printf io "   %-7s%-15.5g%-15.5g%-15.5g%-15.5g\n" "α₁" fit.params[2] fit.secoef[2] fit.tval[2] prt(fit.tval[2])
-    @printf io "   %-7s%-15.5g%-15.5g%-15.5g%-15.5g\n" "β₁" fit.params[3] fit.secoef[3] fit.tval[3] prt(fit.tval[3])
+    @printf io "   %-7s%-15.5g%-15.5g%-15.5g%-15.5g\n" "ω" fit.params[1] fit.secoef[1] fit.tval[1] prt(fit.tval[1])
+    @printf io "   %-7s%-15.5g%-15.5g%-15.5g%-15.5g\n" "α" fit.params[2] fit.secoef[2] fit.tval[2] prt(fit.tval[2])
+    @printf io "   %-7s%-15.5g%-15.5g%-15.5g%-15.5g\n" "β" fit.params[3] fit.secoef[3] fit.tval[3] prt(fit.tval[3])
 end
 
-function cdHessian(par, LLH)
-    eps = 1e-4 * par
-    n = length(par)
+
+# Central difference Hessian approximation
+function cdHessian(params, f)
+    eps = 1e-4 * params
+    n = length(params)
     H = zeros(n, n)
+    function step(x, i1, i2, d1, d2)
+        xc = copy(x)
+        xc[i1] += d1
+        xc[i2] += d2
+        f(xc)
+    end
     for i in 1:n
         for j in 1:n
-            x₁ = copy(par)
-            x₁[i] += eps[i]
-            x₁[j] += eps[j]
-            x₂ = copy(par)
-            x₂[i] += eps[i]
-            x₂[j] -= eps[j]
-            x₃ = copy(par)
-            x₃[i] -= eps[i]
-            x₃[j] += eps[j]
-            x₄ = copy(par)
-            x₄[i] -= eps[i]
-            x₄[j] -= eps[j]
-            H[i,j] = (LLH(x₁) - LLH(x₂) - LLH(x₃) + LLH(x₄)) / (4 .* eps[i] * eps[j])
+            H[i,j] = (step(params, i, j, eps[i], eps[j]) -
+                      step(params, i, j, eps[i], -eps[j]) -
+                      step(params, i, j, -eps[i], eps[j]) +
+                      step(params, i, j, -eps[i], -eps[j])) / (4.*eps[i]*eps[j])
         end
     end
-    return H
+    H
 end
 
 
-function calculateVolatilityProcess(ɛ²::Vector, α₀, α₁, β₁)
+function garchSim(ɛ²::Vector, ω, α, β)
     h = similar(ɛ²)
     h[1] = mean(ɛ²)
     for i = 2:length(ɛ²)
-        h[i] = α₀ + α₁ * ɛ²[i - 1] + β₁ * h[i - 1]
+        h[i] = ω + α*ɛ²[i-1] + β*h[i-1]
     end
-    return h
+    h
 end
 
 
-function garchLLH(y::Vector, x::Vector)
-    ɛ² = y .^ 2
+function garchLLH(y::Vector, params::Vector)
+    ɛ² = y.^2
     T = length(y)
-    α₀, α₁, β₁ = x
-    h = calculateVolatilityProcess(ɛ², α₀, α₁, β₁)
-    return -0.5 * (T - 1) * log(2π) - 0.5 * sum(log(h) + (y ./ sqrt(h)) .^ 2)
+    h = garchSim(ɛ², params...)
+    -0.5*(T-1)*log(2π) - 0.5*sum(log.(h) + (y./sqrt.(h)).^2)
 end
 
-function predict(fit::GarchFit)
-    α₀, α₁, β₁ = fit.params
+
+# n-step prediction
+function predict(fit::GarchFit, n=1)
+    ω, α, β = fit.params
     y = fit.data
     ɛ² = y.^2
-    h = calculateVolatilityProcess(ɛ², α₀, α₁, β₁)
-    return sqrt(α₀ + α₁ * ɛ²[end] + β₁ * h[end])
+    h = garchSim(ɛ², ω, α, β)
+    pred = ω + α*ɛ²[end] + β*h[end]
+    if n == 1
+        return sqrt(pred)
+    end
+    pred = [pred]
+    for i in 2:n
+        push!(pred, ω + (α + β)*pred[end])
+    end
+    sqrt.(pred)
 end
+
 
 function garchFit(y::Vector)
     ɛ² = y.^2
     T = length(y)
     h = zeros(T)
-    function garchLike(x::Vector, grad::Vector)
-        α₀, α₁, β₁ = x
-        h = calculateVolatilityProcess(ɛ², α₀, α₁, β₁)
-        sum(log(h) + (y ./ sqrt(h)) .^ 2)
-    end
-    opt = Opt(:LN_SBPLX, 3)
+    
+    opt = Opt(is_apple() ? (:LN_PRAXIS) : (:LN_SBPLX), 3)  # LN_SBPLX has a problem on mac currently
     lower_bounds!(opt, [1e-10, 0.0, 0.0])
     upper_bounds!(opt, [1, 0.3, 0.99])
-    min_objective!(opt, garchLike)
+    min_objective!(opt, (params, grad) -> -garchLLH(y, params))
     (minf, minx, ret) = optimize(opt, [1e-5, 0.09, 0.89])
+    h = garchSim(ɛ², minx...)
+    
     converged = minx[1] > 0 && all(minx[2:3] .>= 0) && sum(minx[2:3]) < 1.0
     H = cdHessian(minx, x -> garchLLH(y, x))
     cvar = -inv(H)
-    secoef = sqrt(diag(cvar))
+    secoef = sqrt.(diag(cvar))
     tval = minx ./ secoef
-    return GarchFit(y, minx, -0.5 * (T - 1) * log(2π) - 0.5 * minf, ret, converged, sqrt(h), H, cvar, secoef, tval)
+    GarchFit(y, minx, -minf, ret, converged, sqrt.(h), H, cvar, secoef, tval)
 end
 
 end  #module
