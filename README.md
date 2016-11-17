@@ -1,5 +1,5 @@
 # Julia GARCH package
-***
+
 [![Build Status](https://travis-ci.org/AndreyKolev/GARCH.jl.svg?branch=master)](https://travis-ci.org/AndreyKolev/GARCH.jl)
 
 Generalized Autoregressive Conditional Heteroskedastic ([GARCH](http://en.wikipedia.org/wiki/Autoregressive_conditional_heteroskedasticity)) models for Julia.
