@@ -39,10 +39,12 @@ Structure containing details of the GARCH fit with the fllowing fields:
   
 ### predict
 make n-step volatility prediction  
-#### arguments:
+
+##### arguments:
 * fit - fitted object returned by garchFit
-* n - the number of time-steps to be forecasted, by default 1
-#### returns:
+* n - the number of time-steps to be forecasted, by default 1  
+
+##### returns:
 n-step-ahead volatility forecast
 
 ## Example
