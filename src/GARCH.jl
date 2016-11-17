@@ -2,6 +2,7 @@
 # Copyright 2013 Andrey Kolev
 # Distributed under MIT license (see LICENSE.md)
 
+"Generalized Autoregressive Conditional Heteroskedastic (GARCH) models for Julia."
 module GARCH
 
 using NLopt, Distributions
@@ -10,6 +11,8 @@ export garchFit, predict
 
 include("stattests.jl")
 
+
+"Fitted GARCH model object."
 type GarchFit
     data::Vector
     params::Vector
@@ -22,6 +25,7 @@ type GarchFit
     secoef::Vector
     tval::Vector
 end
+
 
 function Base.show(io::IO ,fit::GarchFit)
     pnorm(x) = 0.5 * (1 + erf(x / sqrt(2)))
@@ -45,7 +49,7 @@ function Base.show(io::IO ,fit::GarchFit)
 end
 
 
-# Central difference Hessian approximation
+"Estimate Hessian using central difference approximation."
 function cdHessian(params, f)
     eps = 1e-4 * params
     n = length(params)
@@ -67,7 +71,7 @@ function cdHessian(params, f)
     H
 end
 
-
+"Simulate GARCH process."
 function garchSim(ɛ²::Vector, ω, α, β)
     h = similar(ɛ²)
     h[1] = mean(ɛ²)
@@ -77,7 +81,7 @@ function garchSim(ɛ²::Vector, ω, α, β)
     h
 end
 
-
+"Normal GARCH log likelihood function."
 function garchLLH(y::Vector, params::Vector)
     ɛ² = y.^2
     T = length(y)
@@ -85,9 +89,27 @@ function garchLLH(y::Vector, params::Vector)
     -0.5*(T-1)*log(2π) - 0.5*sum(log.(h) + (y./sqrt.(h)).^2)
 end
 
+"""
+    predict(fit::GarchFit, n::Integer=1)
 
-# n-step prediction
-function predict(fit::GarchFit, n=1)
+Make n-step prediction using fitted object returned by garchFit (default step=1).
+
+# Arguments
+* `fit::GarchFit` : fitted model object returned by garchFit.
+* `n::Integer` : the number of time-steps to be forecasted, by default 1 (returns scalar for n=1 and array for n>1).
+
+# Examples
+
+```
+fit = garchFit(ret)
+predict(fit, n=2)
+```
+
+"""
+function predict(fit::GarchFit, n::Integer=1)
+    if n < 1
+        throw(ArgumentError("n shoud be >= 1 !"))
+    end
     ω, α, β = fit.params
     y = fit.data
     ɛ² = y.^2
@@ -103,7 +125,25 @@ function predict(fit::GarchFit, n=1)
     sqrt.(pred)
 end
 
+"""
+    garchFit(y::Vector)
 
+Estimate parameters of the univariate normal GARCH process.
+
+# Arguments
+* `y::Vector`: univariate time-series array
+
+# Examples
+
+```
+filename = Pkg.dir("GARCH", "test", "data", "SPY.csv")
+close = Array{Float64}(readcsv(filename)[:,2])
+ret = diff(log.(close))
+ret = ret - mean(ret)
+fit = garchFit(ret)
+```
+
+"""
 function garchFit(y::Vector)
     ɛ² = y.^2
     T = length(y)

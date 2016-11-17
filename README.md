@@ -7,18 +7,17 @@ Generalized Autoregressive Conditional Heteroskedastic ([GARCH](http://en.wikipe
 ## What is implemented
 
 * garchFit - estimates parameters of univariate normal GARCH process.
-* predict - make prediction using fitted object returned by garchFit
-* garchPkgTest - runs package test (compares model parameters with those obtained using R fGarch)
+* predict - make n-step prediction using fitted object returned by garchFit
 * Jarque-Bera residuals test 
 * Error analysis
+* Package test (compares model parameters and predictions with those obtained using R fGarch)
 
 Analysis of model residuals - currently only Jarque-Bera Test implemented.
 
 ## What is not ready yet
 
-* More complex GARCH models
+* Asymmetric and non-normal GARCH models
 * Comprehensive set of residuals tests
-* n-step forecasts
 
 ## Usage
 ### garchFit
@@ -39,19 +38,20 @@ Structure containing details of the GARCH fit with the fllowing fields:
 * tval - t-statistics
   
 ### predict
-make volatility prediction  
+make n-step volatility prediction  
 #### arguments:
-fit - fitted object returned by garchFit  
+fit - fitted object returned by garchFit 
+n - the number of time-steps to be forecasted, by default 1
 #### returns:
-one-step-ahead volatility forecast  
+n-step-ahead volatility forecast
 
 ## Example
 
     using GARCH
     using Quandl
     quotes = quandl("YAHOO/INDEX_GSPC", format="DataFrame")
-    ret = diff(log(array(quotes[:Adjusted_Close])))
-    garchFit(ret)
+    ret = diff(log(Array{Float64}(quotes[:Adjusted_Close])))
+    fit = garchFit(ret)
     
 ## Author
 Andrey Kolev
