@@ -1,14 +1,17 @@
-using Base.Test
 using GARCH
+using Pkg, Test, DelimitedFiles, Statistics
 
-filename = Pkg.dir("GARCH", "test", "data", "SPY.csv")
-close = Array{Float64}(readcsv(filename)[:,2])
-ret = diff(log.(close))
-ret = ret - mean(ret)
+
+filename = Pkg.dir("GARCH", "test", "data", "price.csv")
+price = Array{Float64}(readdlm(filename, ',')[:,2])
+
+ret = diff(log.(price))
+ret = ret .- mean(ret)
 fit = garchFit(ret)
 
 param = [2.469347e-06, 1.142268e-01, 8.691734e-01] #R fGarch garch(1,1) estimated params
 
-@test_approx_eq_eps(fit.params, param, 1e-3)
-@test_approx_eq_eps(predict(fit), 0.005617744, 1e-4)
-@test_approx_eq_eps(predict(fit, 2), [0.005617744, 0.005788309], 1e-4)
+@test fit.params ≈ param atol=1e-3
+@test predict(fit) ≈ 0.005617744 atol = 1e-4
+@test predict(fit, 2) ≈ [0.005617744, 0.005788309] atol = 1e-4
+

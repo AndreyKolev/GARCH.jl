@@ -5,7 +5,7 @@
 "Generalized Autoregressive Conditional Heteroskedastic (GARCH) models for Julia."
 module GARCH
 
-using NLopt, Distributions
+using NLopt, Distributions, Printf, LinearAlgebra, SpecialFunctions
 
 export garchFit, predict
 
@@ -13,7 +13,7 @@ include("stattests.jl")
 
 
 "Fitted GARCH model object."
-type GarchFit
+struct GarchFit
     data::Vector
     params::Vector
     llh::Float64
@@ -65,7 +65,7 @@ function cdHessian(params, f)
             H[i,j] = (step(params, i, j, eps[i], eps[j]) -
                       step(params, i, j, eps[i], -eps[j]) -
                       step(params, i, j, -eps[i], eps[j]) +
-                      step(params, i, j, -eps[i], -eps[j])) / (4.*eps[i]*eps[j])
+                      step(params, i, j, -eps[i], -eps[j])) / (4.0*eps[i]*eps[j])
         end
     end
     H
@@ -136,9 +136,9 @@ Estimate parameters of the univariate normal GARCH process.
 # Examples
 
 ```
-filename = Pkg.dir("GARCH", "test", "data", "SPY.csv")
-close = Array{Float64}(readcsv(filename)[:,2])
-ret = diff(log.(close))
+filename = Pkg.dir("GARCH", "test", "data", "price.csv")
+price = Array{Float64}(readdlm(filename, ',')[:,2])
+ret = diff(log.(price))
 ret = ret - mean(ret)
 fit = garchFit(ret)
 ```
@@ -149,7 +149,8 @@ function garchFit(y::Vector)
     T = length(y)
     h = zeros(T)
     
-    opt = Opt(is_apple() ? (:LN_PRAXIS) : (:LN_SBPLX), 3)  # LN_SBPLX has a problem on mac currently
+    #opt = Opt(Sys.isapple() ? (:LN_PRAXIS) : (:LN_SBPLX), 3)  # LN_SBPLX has a problem on mac currently
+    opt = Opt(:LN_SBPLX, 3)
     lower_bounds!(opt, [1e-10, 0.0, 0.0])
     upper_bounds!(opt, [1, 0.3, 0.99])
     min_objective!(opt, (params, grad) -> -garchLLH(y, params))
