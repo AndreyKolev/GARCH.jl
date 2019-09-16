@@ -13,5 +13,4 @@ notifications:
   email: false
 script:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.clone(pwd())'
-  - julia -e 'Pkg.test("GARCH")'
+  - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.test("GARCH")'
