@@ -1,7 +1,7 @@
 name = "GARCH"
 uuid = "4d2f22df-77d7-5622-8d7f-1db4ec2bcc3a"
 authors = ["Andrey Kolev"]
-version = "0.3.1"
+version = "0.3.2"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
