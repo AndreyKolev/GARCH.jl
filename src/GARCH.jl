@@ -5,7 +5,7 @@
 "Generalized Autoregressive Conditional Heteroskedastic (GARCH) models for Julia."
 module GARCH
 
-using NLopt, Distributions, Printf, LinearAlgebra, SpecialFunctions
+using NLopt, Distributions, Printf, LinearAlgebra, SpecialFunctions, TimeSeries
 
 export garchFit, predict
 
