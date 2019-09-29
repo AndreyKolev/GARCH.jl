@@ -165,4 +165,6 @@ function garchFit(y::Vector)
     GarchFit(y, minx, -minf, ret, converged, sqrt.(h), H, cvar, secoef, tval)
 end
 
+garchFit(y::TimeArray) = garchFit(values(y))
+
 end  #module
