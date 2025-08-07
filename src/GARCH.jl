@@ -204,15 +204,15 @@ end
 
 "Computes and returns a Diagnostics struct containing key diagnostic statistics for the GARCH model"
 function diagnostics(model::GARCHModel, x::Vector{Float64})
-	x0 = params(model)  # save paramters to prevent changes by llh! in subsequent llh! callls
+	x0 = params(model)
 	H = cd_hessian(collect(x0), par -> llh!(model, par, x))
-	params!(model, collect(x0))  # restore settings
+	params!(model, collect(x0))
 	det(H) ≈ 0 && @warn "Hessian is singular!"
 	cvar = diag(-pinv(H))
 	cvar[cvar.<0] .= NaN
 	secoef = sqrt.(cvar)
 	tval = collect(params(model))./secoef
-	pv = pvalue_2tailed.(tval) #pnorm.(tval)
+	pv = pvalue_2tailed.(tval)
 	par = params(model)
 	llh_ = llh(model, x)
 	ic = IC(model, x)

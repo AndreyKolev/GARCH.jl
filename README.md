@@ -6,7 +6,6 @@ The **Julia GARCH Package** provides a flexible framework for modeling time seri
 
 Designed for researchers and practitioners working with financial and economic time series, this package supports volatility modeling and conditional mean forecasting. It is built with extensibility in mind, enabling users to implement, customize, and extend GARCH-based models within the Julia ecosystem.
 
----
 
 ## Features Implemented
 
@@ -17,14 +16,12 @@ Designed for researchers and practitioners working with financial and economic t
 - Built-in **error analysis** and diagnostic tools
 - **Jarque-Bera test** for evaluating the normality of residuals
 
----
 
 ## Features Under Development
 
 - **Enhanced model testing**
 - **Simulation capabilities**
 
----
 
 ## Usage
 
@@ -65,7 +62,6 @@ Access diagnostic information:
 diagnostics_output = diagnostics(model, rets)
 ```
 
----
 
 ### Alternative Model Specification Example
 
@@ -75,7 +71,6 @@ You can also define a model using standard GARCH with a Normal distribution:
 model = GARCHModel(ARMA(2, 2), sGARCH(2, 2), Normal())
 ```
 
----
 
 ## Extending the Package
 
@@ -89,3 +84,11 @@ This modular structure allows for seamless integration of new models.
 ---
 
 For more information, refer to the source code.
+
+## Author
+Andrey Kolev
+
+## References
+* T. Bollerslev (1986): Generalized Autoregressive Conditional Heteroscedasticity. Journal of Econometrics 31, 307–327.
+* R. F. Engle (1982): Autoregressive Conditional Heteroscedasticity with Estimates of the Variance of United Kingdom Inflation. Econometrica 50, 987–1008.
+* Whittle, P. (1951). Hypothesis Testing in Time Series Analysis. Almquist and Wicksell. Whittle, P. (1963). Prediction and Regulation. English Universities Press. ISBN 0-8166-1147-5.
