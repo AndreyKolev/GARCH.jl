@@ -2,62 +2,90 @@
 
 [![Build Status](https://travis-ci.org/AndreyKolev/GARCH.jl.svg?branch=master)](https://travis-ci.org/AndreyKolev/GARCH.jl)
 
-Generalized Autoregressive Conditional Heteroskedastic ([GARCH](http://en.wikipedia.org/wiki/Autoregressive_conditional_heteroskedasticity)) models for Julia.
+The **Julia GARCH Package** provides a flexible framework for modeling time series data using Generalized Autoregressive Conditional Heteroskedasticity (GARCH) models.
 
-## What is implemented
+Designed for researchers and practitioners working with financial and economic time series, this package supports volatility modeling and conditional mean forecasting. It is built with extensibility in mind, enabling users to implement, customize, and extend GARCH-based models within the Julia ecosystem.
 
-* garchFit - estimates parameters of univariate normal GARCH process.
-* predict - make n-step prediction using fitted object returned by garchFit
-* Jarque-Bera residuals test 
-* Error analysis
-* Package test (compares model parameters and predictions with those obtained using R fGarch)
+---
 
-Analysis of model residuals - currently only Jarque-Bera Test implemented.
+## Features Implemented
 
-## What is not ready yet
+- **ARMA(p, q)** models for capturing the conditional mean of time series
+- **GARCH(p, q)** and **gjrGARCH(p, q)** models for modeling conditional variance (volatility)
+- Support for **Normal** and **Skew Normal** conditional distributions
+- **n-step ahead forecasting** of both conditional mean and variance
+- Built-in **error analysis** and diagnostic tools
+- **Jarque-Bera test** for evaluating the normality of residuals
 
-* Asymmetric and non-normal GARCH models
-* Comprehensive set of residuals tests
+---
+
+## Features Under Development
+
+- **Enhanced model testing**
+- **Simulation capabilities**
+
+---
 
 ## Usage
-### garchFit
-estimates parameters of univariate normal GARCH process.
-#### arguments:
-data - data vector
-#### returns:
-Structure containing details of the GARCH fit with the fllowing fields:
 
-* data - orginal data  
-* params - vector of model parameters (omega,alpha,beta)  
-* llh - likelihood  
-* status - status of the solver  
-* converged - boolean convergence status, true if constraints are satisfied  
-* sigma - conditional volatility  
-* hessian - Hessian matrix
-* secoef - standard errors
-* tval - t-statistics
-  
-### predict
-make n-step volatility prediction  
+The package employs an **object-oriented design**, allowing intuitive model composition, customization, and extension. Users can easily define and combine components for conditional mean, conditional variance, and distributional assumptions.
 
-#### arguments:
-* fit - fitted object returned by garchFit
-* n - the number of time-steps to be forecasted, by default 1  
+### Example: Basic Workflow
 
-#### returns:
-n-step-ahead volatility forecast
+Load your data and compute log returns:
 
-## Example
+```julia
+quotes = readdlm("quotes.csv", ',')
+price = float.(quotes[:, 2])
+rets = diff(log.(price))
+```
 
-    using GARCH
-    using Quandl
-    quotes = quandl("YAHOO/INDEX_GSPC", format="DataFrame")
-    ret = diff(log(Array{Float64}(quotes[:Adjusted_Close])))
-    fit = garchFit(ret)
-    
-## Author
-Andrey Kolev
+Define a model with ARMA(1,1) for the conditional mean, gjrGARCH(1,1) for volatility, and a Skew Normal distribution:
 
-## References
-* T. Bollerslev (1986): Generalized Autoregressive Conditional Heteroscedasticity. Journal of Econometrics 31, 307–327.
-* R. F. Engle (1982): Autoregressive Conditional Heteroscedasticity with Estimates of the Variance of United Kingdom Inflation. Econometrica 50, 987–1008.
+```julia
+using GARCH
+model = GARCHModel(ARMA(1, 1), gjrGARCH(1, 1), SkewNormal())
+```
+
+Fit the model to the return series (stored in rets array):
+
+```julia
+fit!(model, rets)
+```
+
+Perform forecasting after fitting:
+
+```julia
+pred_mu, pred_sigma = predict(model, rets)
+```
+
+Access diagnostic information:
+
+```julia
+diagnostics_output = diagnostics(model, rets)
+```
+
+---
+
+### Alternative Model Specification Example
+
+You can also define a model using standard GARCH with a Normal distribution:
+
+```julia
+model = GARCHModel(ARMA(2, 2), sGARCH(2, 2), Normal())
+```
+
+---
+
+## Extending the Package
+
+If you wish to extend the package, you can define custom components by creating new types in the following files:
+- Conditional mean: `mean.jl`
+- Conditional variance: `variance.jl`
+- Conditional distribution: `distribution.jl`
+
+This modular structure allows for seamless integration of new models.
+
+---
+
+For more information, refer to the source code.

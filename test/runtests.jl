@@ -1,17 +1,15 @@
-using GARCH
-using Pkg, Test, DelimitedFiles, Statistics
+using GARCH, DelimitedFiles, Test
 
+rets = float.(readdlm(joinpath(dirname(pathof(GARCH)), "..", "test", "data", "rets.csv"), ',')[:,2])
+model = GARCHModel(ARMA(1,1), gjrGARCH(1,1), SkewNormal())
 
-filename = Pkg.dir("GARCH", "test", "data", "price.csv")
-price = Array{Float64}(readdlm(filename, ',')[:,2])
+@testset "Model fit" begin
+    status = fit!(model, rets)
+    @test status.llh ≈ 800.656 atol=1e-3
+end
 
-ret = diff(log.(price))
-ret = ret .- mean(ret)
-fit = garchFit(ret)
-
-param = [2.469347e-06, 1.142268e-01, 8.691734e-01] #R fGarch garch(1,1) estimated params
-
-@test fit.params ≈ param atol=1e-3
-@test predict(fit) ≈ 0.005617744 atol = 1e-4
-@test predict(fit, 2) ≈ [0.005617744, 0.005788309] atol = 1e-4
-
+@testset "Prediction" begin
+    pred_mu, pred_sigma = predict(model, rets)
+    @test pred_mu ≈ [0.0008845179388626819, 0.0008374642123771316, 0.0008081135754413952, 0.0007898055698300234, 0.0007783856108628667, 0.0007712621990844403, 0.0007668188385162493, 0.0007640472097303424, 0.0007623183547321996, 0.0007612399492762447] atol=1e-3
+    @test pred_sigma ≈ [0.006031309371575526, 0.006241513897770221, 0.006434677263865915, 0.006612797831089854, 0.006777529220970023, 0.006930260196059699, 0.007072171854654787, 0.007204279599243834, 0.007327464593622746, 0.007442497783888907] atol=1e-3
+end
