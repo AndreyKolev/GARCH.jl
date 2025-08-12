@@ -1,6 +1,6 @@
 name = "GARCH"
 uuid = "4d2f22df-77d7-5622-8d7f-1db4ec2bcc3a"
-version = "0.9.0"
+version = "0.9.1"
 authors = ["Andrey Kolev"]
 
 [deps]
