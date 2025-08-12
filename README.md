@@ -71,6 +71,46 @@ You can also define a model using standard GARCH with a Normal distribution:
 model = GARCHModel(ARMA(2, 2), sGARCH(2, 2), Normal())
 ```
 
+## ⚠️Breaking changes
+The API for fitting GARCH models has been completely refactored to support greater flexibility and modularity. The previous direct garchFit(ret) interface has been replaced with a more powerful, composable architecture based on the GARCHModel type.
+
+### Key Changes:
+- **Old API**: `fit = garchFit(rets)` returned a `GARCHFit` object containing data, parameters, likelihood, diagnostics, etc.
+- **New API**: 
+    - You now define a `GARCHModel` with explicit components (conditional mean, conditional variance, and conditional distribution), then use `fit!` to estimate parameters, and separate methods (`predict`, `diagnostics`) for subsequent analysis. 
+    - `predict` now returns forecasts for both the conditional mean and variance - unlike the previous version, which returned only the conditional variance.
+    - The new API requires time series data at every stage, ensuring that fitted models can be consistently applied to new data.
+
+### Deprecated compatibility methods:
+The old `garchFit` function is still available but marked as deprecated. It wraps the new API under the hood, so it will continue to work temporarily, but you should migrate to the new syntax for future compatibility and access to advanced features.
+
+### Migration Guide:
+
+1. **Replace `garchFit(ret)` with `GARCHModel` and `fit!`**:
+   ```julia
+   # Old way (deprecated)
+   # fit = garchFit(rets)
+
+   # New way
+   model = GARCHModel(ARMA(1, 1), gjrGARCH(1, 1), SkewNormal())
+   fit!(model, rets)
+   ```
+
+2. **Forecasting and diagnostics**:
+   ```julia
+   # Forecast
+   pred_mu, pred_sigma = predict(model, rets)
+
+   # Diagnostics
+   diagnostics(model, rets)
+   ```
+ 
+### Why the change?
+This new design enables:
+- Easy combination of different mean, variance, and distribution components.
+- Better separation of model specification, estimation, and inference.
+- Support for more complex models (e.g., GJR-GARCH, ARMA-GARCH, different conditional distributions).
+
 ## Types & Methods reference
 
 ### `GARCHModel`
@@ -144,6 +184,7 @@ If you wish to extend the package, you can define custom components by creating 
 - Conditional mean: `mean.jl`
 - Conditional variance: `variance.jl`
 - Conditional distribution: `distribution.jl`
+- Statistical tests: `stattests.jl`
 
 This modular structure allows for seamless integration of new models.
 
