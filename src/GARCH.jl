@@ -1,5 +1,5 @@
 module GARCH
-export GARCHModel, MeanModel, VarianceModel, ConditionalDistribution, fit!, diagnostics, llh, llh!, params!, ARMA, sGARCH, gjrGARCH, Normal, SkewNormal, predict, unc_mean, unc_variance, residuals, fitted, persistence, half_life, garchFit
+export GARCHModel, MeanModel, VarianceModel, ConditionalDistribution, fit!, diagnostics, llh, llh!, params!, ARMA, sGARCH, gjrGARCH, Normal, SkewNormal, predict, unc_mean, unc_variance, residuals, fitted, persistence, half_life, garchFit, IC
 
 using NLopt, Statistics, LinearAlgebra, Printf
 
