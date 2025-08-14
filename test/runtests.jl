@@ -1,14 +1,27 @@
 using GARCH, DelimitedFiles, Test
 
 rets = float.(readdlm(joinpath(dirname(pathof(GARCH)), "..", "test", "data", "rets.csv"), ',')[:,2])
+
+model = GARCHModel(ARMA(1,1), sGARCH(1,1), Normal())
+@testset "ARMA(1,1)/sGARCH(1,1)/Normal() fit" begin
+    status = fit!(model, rets)
+    @test status.llh ≈ 793.034 atol=1e-3
+end
+
+@testset "ARMA(1,1)/sGARCH(1,1)/Normal() predict" begin
+    pred_mu, pred_sigma = predict(model, rets)
+    @test pred_mu ≈ [0.000503960024737158, 0.0005019922267314037, 0.0005000743982412645, 0.0004982052703598285, 0.0004963836064023243, 0.0004946082010878839, 0.0004928778797420845, 0.0004911914975197395, 0.0004895479386474264, 0.00048794611568524964] atol=1e-3
+    @test pred_sigma ≈ [0.00528848112822829, 0.005463221242958283, 0.005630229079980488, 0.0057902049674823045, 0.005943746717650392, 0.00609136975232492, 0.006233522396628968, 0.006370597689400565, 0.006502942635290341, 0.006630865546204032] atol=1e-3
+end
+
 model = GARCHModel(ARMA(1,1), gjrGARCH(1,1), SkewNormal())
 
-@testset "Model fit" begin
+@testset "ARMA(1,1)/gjrGARCH(1,1)/SkewNormal() fit" begin
     status = fit!(model, rets)
     @test status.llh ≈ 800.656 atol=1e-3
 end
 
-@testset "Prediction" begin
+@testset "ARMA(1,1)/gjrGARCH(1,1)/SkewNormal() predict" begin
     pred_mu, pred_sigma = predict(model, rets)
     @test pred_mu ≈ [0.0008845179388626819, 0.0008374642123771316, 0.0008081135754413952, 0.0007898055698300234, 0.0007783856108628667, 0.0007712621990844403, 0.0007668188385162493, 0.0007640472097303424, 0.0007623183547321996, 0.0007612399492762447] atol=1e-3
     @test pred_sigma ≈ [0.006031309371575526, 0.006241513897770221, 0.006434677263865915, 0.006612797831089854, 0.006777529220970023, 0.006930260196059699, 0.007072171854654787, 0.007204279599243834, 0.007327464593622746, 0.007442497783888907] atol=1e-3
