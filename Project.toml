@@ -12,7 +12,7 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
-julia = "1.12"
+julia = "1.10"
 NLopt = "1.1.4"
 Compat = "4.18.0"
 
