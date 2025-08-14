@@ -1,6 +1,6 @@
 # Julia GARCH package
 
-[![Build Status](https://travis-ci.org/AndreyKolev/GARCH.jl.svg?branch=master)](https://travis-ci.org/AndreyKolev/GARCH.jl)
+[![Tests](https://github.com/AndreyKolev/GARCH.jl/actions/workflows/test.yml/badge.svg)](https://github.com/AndreyKolev/GARCH.jl/actions/workflows/test.yml)
 
 The **Julia GARCH Package** provides a flexible framework for modeling time series data using Generalized Autoregressive Conditional Heteroskedasticity (GARCH) models.
 
