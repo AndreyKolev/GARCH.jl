@@ -1,7 +1,11 @@
 # Conditional Distributions
+using Base.Math: libm
 
 "Computes the error function using C standard library"
-erf(x) = @ccall erf(x::Float64)::Float64
+erf(x::Float64) = @ccall libm.erf(x::Float64)::Float64
+
+"Computes the error function using C standard library"
+erf(x::Float32) = @ccall libm.erf(x::Float32)::Float32
 
 "Computes PDF of Standard Normal distribution"
 stdnorm_pdf(z::Float64) = ℯ^(-z^2/2)/√(2π)
