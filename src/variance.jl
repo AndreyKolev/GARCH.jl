@@ -128,7 +128,6 @@ function predict(model::gjrGARCH, cdist::ConditionalDistribution, ɛ::Vector{Flo
 	β = model.params[p+2:p+q+1]
 	γ = last(model.params, p)
 	h = sim(model, ɛ)
-	μ = zeros(n)
 	σ = zeros(n)
 	κ = cdf(cdist, 0.)
 	for t ∈ 1:n

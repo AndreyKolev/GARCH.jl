@@ -53,7 +53,6 @@ end
 
 "Calculates CDF of Normal distribution with mean μ and standard deviation σ"
 function cdf(cdist::Normal, x::Float64, μ::Float64=0., σ::Float64=1.)
-	x == 0. && return 0.5 
 	z = (x - μ)/σ
 	0.5(1 + erf(z/√2))
 end
